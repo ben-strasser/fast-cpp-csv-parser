@@ -1,4 +1,4 @@
-# Fast Cpp Csv Parser
+# Fast C++ Csv Parser
 
 This is a small, easy-to-use and fast header-only library for reading comma separated value (CSV) files. 
 
