@@ -674,7 +674,7 @@ namespace io{
                 ){
                         for(std::size_t i=0; i<col_order.size(); ++i){
                                 if(line == nullptr)
-                                        throw io::error::too_few_columns();
+                                        throw ::io::error::too_few_columns();
                                 char*col_begin, *col_end;
                                 chop_next_column<quote_policy>(line, col_begin, col_end);
 
@@ -686,7 +686,7 @@ namespace io{
                                 }
                         }
                         if(line != nullptr)
-                                throw io::error::too_many_columns();
+                                throw ::io::error::too_many_columns();
                 }
 
                 template<unsigned column_count, class trim_policy, class quote_policy>
@@ -720,7 +720,7 @@ namespace io{
                                                 break;
                                         }
                                 if(col_begin){
-                                        if(ignore_policy & io::ignore_extra_column)
+                                        if(ignore_policy & ::io::ignore_extra_column)
                                                 col_order.push_back(-1);
                                         else{
                                                 error::extra_column_in_header err;
@@ -729,7 +729,7 @@ namespace io{
                                         }
                                 }
                         }
-                        if(!(ignore_policy & io::ignore_missing_column)){
+                        if(!(ignore_policy & ::io::ignore_missing_column)){
                                 for(unsigned i=0; i<column_count; ++i){
                                         if(!found[i]){
                                                 error::missing_column_in_header err;
@@ -1017,7 +1017,7 @@ namespace io{
                                 try{
                                         try{
                                                 row[r] = row[r];
-                                                io::detail::parse<overflow_policy>(row[r], t);
+                                                ::io::detail::parse<overflow_policy>(row[r], t);
                                         }catch(error::with_column_content&err){
                                                 err.set_column_content(row[r]);
                                                 throw;
