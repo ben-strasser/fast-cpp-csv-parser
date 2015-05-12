@@ -78,27 +78,19 @@ namespace io{
                 };
 
                 struct with_file_line{
-                        with_file_line(){
-                                file_line = -1;
-                        }
-                       
                         void set_file_line(int file_line){
                                 this->file_line = file_line;
                         }
 
-                        int file_line;
+                        int file_line = -1;
                 };
 
                 struct with_errno{
-                        with_errno(){
-                                errno = 0;
-                        }
-                       
                         void set_errno(int errno_value){
                                 this->errno_value = errno_value;
                         }
 
-                        int errno_value;
+                        int errno_value = 0;
                 };
 
                 struct can_not_open_file :
