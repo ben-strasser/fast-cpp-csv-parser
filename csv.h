@@ -91,7 +91,7 @@ namespace io{
 
                 struct with_errno{
                         with_errno(){
-                                errno = 0;
+                                errno_value = 0;
                         }
                        
                         void set_errno(int errno_value){
