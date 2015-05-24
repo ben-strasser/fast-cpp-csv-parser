@@ -62,7 +62,7 @@ namespace io{
                         mutable char error_message_buffer[256];
                 };
 
-                const int max_file_name_length = 255;
+                constexpr static int max_file_name_length = 255;
 
                 struct with_file_name{
                         with_file_name(){
@@ -306,7 +306,7 @@ namespace io{
         ////////////////////////////////////////////////////////////////////////////
 
         namespace error{
-                const int max_column_name_length = 63;
+                constexpr static int max_column_name_length = 63;
                 struct with_column_name{
                         with_column_name(){
                                 std::memset(column_name, 0, max_column_name_length+1);
@@ -321,7 +321,7 @@ namespace io{
                 };
 
 
-                const int max_column_content_length = 63;
+                constexpr static int max_column_content_length = 63;
 
                 struct with_column_content{
                         with_column_content(){
@@ -480,9 +480,9 @@ namespace io{
         }
 
         typedef unsigned ignore_column;
-        static const ignore_column ignore_no_column = 0;
-        static const ignore_column ignore_extra_column = 1;
-        static const ignore_column ignore_missing_column = 2;
+        constexpr static ignore_column ignore_no_column = 0;
+        constexpr static ignore_column ignore_extra_column = 1;
+        constexpr static ignore_column ignore_missing_column = 2;
 
         template<char ... trim_char_list>
         struct trim_chars{
