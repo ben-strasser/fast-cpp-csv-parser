@@ -487,7 +487,7 @@ namespace io{
         template<char ... trim_char_list>
         struct trim_chars{
         private:
-                constexpr static bool is_trim_char(char c){
+                constexpr static bool is_trim_char(char /*c*/){
                         return false;
                 }
        
@@ -508,7 +508,7 @@ namespace io{
 
 
         struct no_comment{
-                static bool is_comment(const char*line){
+                static bool is_comment(const char*/*line*/){
                         return false;
                 }
         };
@@ -516,7 +516,7 @@ namespace io{
         template<char ... comment_start_char_list>
         struct single_line_comment{
         private:
-                constexpr static bool is_comment_start_char(char c){
+                constexpr static bool is_comment_start_char(char /*c*/){
                         return false;
                 }
        
@@ -560,7 +560,7 @@ namespace io{
                         return col_begin;
                 }
 
-                static void unescape(char*&col_begin, char*&col_end){
+                static void unescape(char*&/*col_begin*/, char*&/*col_end*/){
 
                 }
         };
