@@ -601,7 +601,7 @@ namespace io{
                                         char*out = col_begin;
                                         for(char*in = col_begin; in!=col_end; ++in){
                                                 if(*in == quote && *(in+1) == quote){
-                                                        continue;
+                                                         ++in;
                                                 }
                                                 *out = *in;
                                                 ++out;
