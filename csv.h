@@ -1016,7 +1016,6 @@ namespace io{
                         if(row[r]){
                                 try{
                                         try{
-                                                row[r] = row[r];
                                                 ::io::detail::parse<overflow_policy>(row[r], t);
                                         }catch(error::with_column_content&err){
                                                 err.set_column_content(row[r]);
