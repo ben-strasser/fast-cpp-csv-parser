@@ -495,7 +495,7 @@ namespace io{
         template<char ... trim_char_list>
         struct trim_chars{
         private:
-                constexpr static bool is_trim_char(char c){
+                constexpr static bool is_trim_char(char){
                         return false;
                 }
        
@@ -516,7 +516,7 @@ namespace io{
 
 
         struct no_comment{
-                static bool is_comment(const char*line){
+                static bool is_comment(const char*){
                         return false;
                 }
         };
@@ -568,7 +568,7 @@ namespace io{
                         return col_begin;
                 }
 
-                static void unescape(char*&col_begin, char*&col_end){
+                static void unescape(char*&, char*&){
 
                 }
         };
@@ -1009,7 +1009,7 @@ namespace io{
                 }
 
         private:
-                void parse_helper(std::size_t r){}
+                void parse_helper(std::size_t){}
 
                 template<class T, class ...ColType>
                 void parse_helper(std::size_t r, T&t, ColType&...cols){                        
