@@ -83,11 +83,11 @@ The constructor takes a file name and optionally a data source. If no data sourc
 `some_string_type` can be a `std::string` or a `char*`. If the data source is a `std::FILE*` then the library will take care of calling `std::fclose`. If it is a `std::istream` then the stream is not closed by the library. For best performance open the streams in binary mode. However using text mode also works. `ByteSourceBase` provides an interface that you can use to implement further data sources. 
 
 ```
-  class ByteSourceBase{
-  public:
-    virtual int read(char*buffer, int size)=0;
-    virtual ~ByteSourceBase(){}
-  };
+class ByteSourceBase{
+public:
+  virtual int read(char*buffer, int size)=0;
+  virtual ~ByteSourceBase(){}
+};
 ```
 
 The read function should fill the provided buffer with at most `size` bytes from the data source. It should return the number of bytes actually written to the buffer. If data source has run out of bytes (because for example an end of file was reached) then the function should return 0. If a fatal error occures then you can throw an exception. Note that the function can be called both from the main and the worker thread. However, it is guarenteed that they do not call the function at the same time. 
