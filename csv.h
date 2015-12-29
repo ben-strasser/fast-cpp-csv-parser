@@ -1122,7 +1122,7 @@ namespace io{
                 CSVReader&operator=(const CSVReader&);
 
                 template<class ...Args>
-                explicit CSVReader(Args...args):in(std::forward<Args>(args)...){
+                explicit CSVReader(Args&&...args):in(std::forward<Args>(args)...){
                         std::fill(row, row+column_count, nullptr);
                         col_order.resize(column_count);
                         for(unsigned i=0; i<column_count; ++i)
