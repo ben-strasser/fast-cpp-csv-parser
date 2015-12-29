@@ -33,15 +33,15 @@ int main(){
 
 The library only needs a standard conformant C++11 compiler. It has no further dependencies. The library is completely contained inside a single header file and therefore it is sufficient to copy this file to some place on your include path. The library does not have to be explicitly build. 
 
-Note however, that std::future is used and some compiler (f.e. GCC) require you to link against additional libraries (i.e. -lpthread) to make it work. With GCC it is important to add -lpthread as the last item when linking, i.e. the order in 
+Note however, that threads are used and some compiler (for example GCC) require you to link against additional librarie to make it work. With GCC it is important to add -lpthread as the last item when linking, i.e. the order in 
 
 ```
-g++ a.o b.o -o prog -lpthread
+g++ -std=c++0x a.o b.o -o prog -lpthread
 ```
 
-is important.
+is important. If you for some reason do not want to use threads you can define CSV_IO_NO_THREAD before including the header.
 
-Remember that the library makes use of C++11 features and therefore you have to enable support for it (f.e. add -std=C++0x or -std=gnu++0x).
+Remember that the library makes use of C++11 features and therefore you have to enable support for it (f.e. add -std=c++0x or -std=gnu++0x). 
 
 The library was developed and tested with GCC 4.6.1
 
@@ -63,7 +63,9 @@ class LineReader{
 public:
   // Constructors
   LineReader(some_string_type file_name);
-  LineReader(some_string_type file_name, std::FILE*file);
+  LineReader(some_string_type file_name, std::FILE*source);
+  LineReader(some_string_type file_name, std::istream&source);
+  LineReader(some_string_type file_name, std::unique_ptr<ByteSourceBase>source);
 
   // Reading
   char*next_line();
@@ -76,7 +78,19 @@ public:
 };
 ```
 
-The constructor takes a file name and optionally a `stdio.h` file handle. If no file handle is provided the class tries to open the file and throws an `error::can_not_open_file exception` on failure. If a file handle is provided then the file name is only used to format error messages. The library will call `std::fclose` on the file handle. `some_string_type` can be a `std::string` or a `char*`.
+The constructor takes a file name and optionally a data source. If no data source is provided the function tries to open the file with the given name and throws an `error::can_not_open_file exception` on failure. If a data source is provided then the file name is only used to format error messages. In that case you can essentially put any string there. Using a string that describes the data source results in more informative error messages.
+
+`some_string_type` can be a `std::string` or a `char*`. If the data source is a `std::FILE*` then the library will take care of calling `std::fclose`. If it is a `std::istream` then the stream is not closed by the library. For best performance open the streams in binary mode. However using text mode also works. `ByteSourceBase` provides an interface that you can use to implement further data sources. 
+
+```
+  class ByteSourceBase{
+  public:
+    virtual int read(char*buffer, int size)=0;
+    virtual ~ByteSourceBase(){}
+  };
+```
+
+The read function should fill the provided buffer with at most `size` bytes from the data source. It should return the number of bytes actually written to the buffer. If data source has run out of bytes (because for example an end of file was reached) then the function should return 0. If a fatal error occures then you can throw an exception. Note that the function can be called both from the main and the worker thread. However, it is guarenteed that they do not call the function at the same time. 
 
 Lines are read by calling the `next_line` function. It returns a pointer to a null terminated C-string that contains the line. If the end of file is reached a null pointer is returned. The newline character is not included in the string. You may modify the string as long as you do not write past the null terminator. The string stays valid until the destructor is called or until next_line is called again. Windows and `*`nix newlines are handled transparently. UTF-8 BOMs are automatically ignored and missing newlines at the end of the file are no problem.
 
@@ -109,8 +123,7 @@ template<
 class CSVReader{
 public:
   // Constructors
-  CSVReader(some_string_type file_name);
-  CSVReader(some_string_type file_name, std::FILE*file);
+  // same as for LineReader
 
   // Parsing Header
   void read_header(ignore_column ignore_policy, some_string_type col_name1, some_string_type col_name2, ...);
