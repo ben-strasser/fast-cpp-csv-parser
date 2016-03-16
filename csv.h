@@ -1131,6 +1131,20 @@ namespace io{
                                 column_names[i-1] = "col"+std::to_string(i);
                 }
 
+                void ignore_header(){
+                        try{
+                                char*line;
+                                do{
+                                        line = in.next_line();
+                                        if(!line)
+                                                throw error::header_missing();
+                                }while(comment_policy::is_comment(line));
+                        }catch(error::with_file_name&err){
+                                err.set_file_name(in.get_truncated_file_name());
+                                throw;
+                        }
+                }
+
                 template<class ...ColNames>
                 void read_header(ignore_column ignore_policy, ColNames...cols){
                         static_assert(sizeof...(ColNames)>=column_count, "not enough column names specified");
