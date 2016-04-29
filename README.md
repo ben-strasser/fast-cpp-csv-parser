@@ -131,6 +131,7 @@ public:
   bool has_column(some_string_type col_name)const;
 
   // Read
+  char*next_line();
   bool read_row(ColType1&col1, ColType2&col2, ...);
 
   // File Location 
@@ -226,6 +227,8 @@ while(in.read_row(a,b,sum)){
 **Important**: Do not call `has_column` from within the read-loop. It would work correctly but significantly slowdown processing.
 
 If two columns have the same name an error::duplicated_column_in_header exception is thrown. If `read_header` is called but the file is empty a `error::header_missing` exception is thrown.
+
+The `next_line` functions reads a line without parsing it. It works analogous to `LineReader::next_line`. This can be used to skip broken lines in a CSV file. However, in nearly all applications you will want to use the `read_row` function.
 
 The `read_row` function reads a line, splits it into the columns and arranges them correctly. It trims the entries and unescapes them. If requested the content is interpreted as integer or as floating point. The variables passed to read_row may be of the following types.
 
