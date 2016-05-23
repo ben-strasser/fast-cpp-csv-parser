@@ -1102,6 +1102,10 @@ namespace io{
         private:
                 LineReader in;
 
+                template <std::size_t N> 
+                using array_t = std::array<const char*, N>;
+                using default_array_t = array_t<column_count>;
+                
                 char*(row[column_count]);
                 std::string column_names[column_count];
 
@@ -1111,6 +1115,12 @@ namespace io{
                 void set_column_names(std::string s, ColNames...cols){
                         column_names[column_count-sizeof...(ColNames)-1] = std::move(s);
                         set_column_names(std::forward<ColNames>(cols)...);
+                }
+
+                void set_column_names(default_array_t _column_names){
+                    for (unsigned ii(0); ii < column_count; ii++){
+                        column_names[ii] = _column_names[ii];
+                    }
                 }
 
                 void set_column_names(){}
@@ -1137,10 +1147,16 @@ namespace io{
 
                 template<class ...ColNames>
                 void read_header(ignore_column ignore_policy, ColNames...cols){
-                        static_assert(sizeof...(ColNames)>=column_count, "not enough column names specified");
-                        static_assert(sizeof...(ColNames)<=column_count, "too many column names specified");
+                    const array_t<sizeof...(ColNames)> _cols{ cols... };
+                    read_header(ignore_policy, _cols);
+                }
+
+                template<std::size_t ncol_header>
+                void read_header(ignore_column ignore_policy, array_t<ncol_header> cols){
+                        static_assert(ncol_header>=column_count, "not enough column names specified");
+                        static_assert(ncol_header<=column_count, "too many column names specified");
                         try{
-                                set_column_names(std::forward<ColNames>(cols)...);
+                                set_column_names(cols);
 
                                 char*line;
                                 do{
@@ -1159,12 +1175,18 @@ namespace io{
                 }
 
                 template<class ...ColNames>
-                void set_header(ColNames...cols){
-                        static_assert(sizeof...(ColNames)>=column_count,
+                void set_header(ColNames... cols){
+                    const array_t<sizeof...(ColNames)> _cols{ cols... };
+                    set_header(_cols);
+                }
+
+                template<size_t ncol_header>
+                void set_header(array_t<ncol_header> cols){
+                        static_assert(ncol_header>=column_count,
                                 "not enough column names specified");
-                        static_assert(sizeof...(ColNames)<=column_count,
+                        static_assert(ncol_header<=column_count,
                                 "too many column names specified");
-                        set_column_names(std::forward<ColNames>(cols)...);
+                        set_column_names(cols);
                         std::fill(row, row+column_count, nullptr);
                         col_order.resize(column_count);
                         for(unsigned i=0; i<column_count; ++i)
