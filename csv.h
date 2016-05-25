@@ -710,7 +710,7 @@ namespace io{
         template<char ... comment_start_char_list>
         struct single_line_comment{
         private:
-                constexpr static bool is_comment_start_char(char c){
+                constexpr static bool is_comment_start_char(char){
                         return false;
                 }
        
