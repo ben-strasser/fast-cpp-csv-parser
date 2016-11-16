@@ -786,7 +786,7 @@ namespace io{
                                         --col_end;
                                         char*out = col_begin;
                                         for(char*in = col_begin; in!=col_end; ++in){
-                                                if(*in == quote && *(in+1) == quote){
+                                                if(*in == quote && (in+1) != col_end && *(in+1) == quote){
                                                          ++in;
                                                 }
                                                 *out = *in;
