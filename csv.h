@@ -233,7 +233,7 @@ namespace io{
                         }
 
                         bool is_valid()const{
-                                return byte_source != 0;
+                                return byte_source != nullptr;
                         }
 
                         void start_read(char*arg_buffer, int arg_desired_byte_count){
@@ -259,7 +259,7 @@ namespace io{
                         }
 
                         ~AsynchronousReader(){
-                                if(byte_source != 0){
+                                if(byte_source != nullptr){
                                         {
                                                 std::unique_lock<std::mutex>guard(lock);
                                                 termination_requested = true;
@@ -293,7 +293,7 @@ namespace io{
                         }
 
                         bool is_valid()const{
-                                return byte_source != 0;
+                                return byte_source != nullptr;
                         }
 
                         void start_read(char*arg_buffer, int arg_desired_byte_count){
