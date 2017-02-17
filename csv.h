@@ -314,12 +314,12 @@ namespace io{
         class LineReader{
         private:
                 static const int block_len = 1<<24;
+                std::unique_ptr<char[]>buffer; // must be constructed before (and thus destructed after) the reader!
                 #ifdef CSV_IO_NO_THREAD
                 detail::SynchronousReader reader;
                 #else
                 detail::AsynchronousReader reader;
                 #endif
-                char*buffer;
                 int data_begin;
                 int data_end;
 
@@ -343,22 +343,17 @@ namespace io{
                 void init(std::unique_ptr<ByteSourceBase>byte_source){
                         file_line = 0;
 
-                        buffer = new char[3*block_len];
-                        try{
-                                data_begin = 0;
-                                data_end = byte_source->read(buffer, 2*block_len);
+                        buffer = std::unique_ptr<char[]>(new char[3*block_len]);
+                        data_begin = 0;
+                        data_end = byte_source->read(buffer.get(), 2*block_len);
 
-                                // Ignore UTF-8 BOM
-                                if(data_end >= 3 && buffer[0] == '\xEF' && buffer[1] == '\xBB' && buffer[2] == '\xBF')
-                                        data_begin = 3;
+                        // Ignore UTF-8 BOM
+                        if(data_end >= 3 && buffer[0] == '\xEF' && buffer[1] == '\xBB' && buffer[2] == '\xBF')
+                                data_begin = 3;
 
-                                if(data_end == 2*block_len){
-                                        reader.init(std::move(byte_source));
-                                        reader.start_read(buffer + 2*block_len, block_len);
-                                }
-                        }catch(...){
-                                delete[]buffer;
-                                throw;
+                        if(data_end == 2*block_len){
+                                reader.init(std::move(byte_source));
+                                reader.start_read(buffer.get() + 2*block_len, block_len);
                         }
                 }
 
@@ -448,14 +443,14 @@ namespace io{
                         assert(data_end <= block_len*2);
 
                         if(data_begin >= block_len){
-                                std::memcpy(buffer, buffer+block_len, block_len);
+                                std::memcpy(buffer.get(), buffer.get()+block_len, block_len);
                                 data_begin -= block_len;
                                 data_end -= block_len;
                                 if(reader.is_valid())
                                 {
                                         data_end += reader.finish_read();
-                                        std::memcpy(buffer+block_len, buffer+2*block_len, block_len);
-                                        reader.start_read(buffer + 2*block_len, block_len);
+                                        std::memcpy(buffer.get()+block_len, buffer.get()+2*block_len, block_len);
+                                        reader.start_read(buffer.get() + 2*block_len, block_len);
                                 }
                         }
 
@@ -484,13 +479,9 @@ namespace io{
                         if(line_end != data_begin && buffer[line_end-1] == '\r')
                                 buffer[line_end-1] = '\0';
 
-                        char*ret = buffer + data_begin;
+                        char*ret = buffer.get() + data_begin;
                         data_begin = line_end+1;
                         return ret;
-                }
-
-                ~LineReader(){
-                        delete[] buffer;
                 }
         };
 
