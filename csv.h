@@ -1073,7 +1073,7 @@ namespace io{
                 template<class overflow_policy> void parse(char*col, long double&x) { parse_float(col, x); }
 
                 template<class overflow_policy, class T>
-                void parse(char*col, T&x){
+                void parse(char*, T&){
                         // GCC evalutes "false" when reading the template and
                         // "sizeof(T)!=sizeof(T)" only when instantiating it. This is why
                         // this strange construct is used.
