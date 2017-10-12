@@ -1074,6 +1074,9 @@ namespace io{
 
                 template<class overflow_policy, class T>
                 void parse(char*col, T&x){
+                        // Mute unused variable compiler warning
+                        (void)col;
+                        (void)x;
                         // GCC evalutes "false" when reading the template and
                         // "sizeof(T)!=sizeof(T)" only when instantiating it. This is why
                         // this strange construct is used.
