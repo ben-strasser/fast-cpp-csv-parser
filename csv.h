@@ -74,8 +74,12 @@ namespace io{
                         }
                        
                         void set_file_name(const char*file_name){
-                                std::strncpy(this->file_name, file_name, max_file_name_length);
-                                this->file_name[max_file_name_length] = '\0';
+                                if(file_name != nullptr){
+                                        strncpy(this->file_name, file_name, error::max_file_name_length);
+                                        this->file_name[error::max_file_name_length] = '\0';
+                                }else{
+                                        this->file_name[0] = '\0';
+                                }
                         }
 
                         char file_name[max_file_name_length+1];
@@ -417,8 +421,12 @@ namespace io{
                 }
 
                 void set_file_name(const char*file_name){
-                        strncpy(this->file_name, file_name, error::max_file_name_length);
-                        this->file_name[error::max_file_name_length] = '\0';
+                        if(file_name != nullptr){
+                                strncpy(this->file_name, file_name, error::max_file_name_length);
+                                this->file_name[error::max_file_name_length] = '\0';
+                        }else{
+                                this->file_name[0] = '\0';
+                        }
                 }
 
                 const char*get_truncated_file_name()const{
@@ -498,8 +506,12 @@ namespace io{
                         }
                        
                         void set_column_name(const char*column_name){
-                                std::strncpy(this->column_name, column_name, max_column_name_length);
-                                this->column_name[max_column_name_length] = '\0';
+                                if(column_name != nullptr){
+                                        std::strncpy(this->column_name, column_name, max_column_name_length);
+                                        this->column_name[max_column_name_length] = '\0';
+                                }else{
+                                        this->column_name[0] = '\0';
+                                }
                         }
 
                         char column_name[max_column_name_length+1];
@@ -514,8 +526,12 @@ namespace io{
                         }
                        
                         void set_column_content(const char*column_content){
-                                std::strncpy(this->column_content, column_content, max_column_content_length);
-                                this->column_content[max_column_content_length] = '\0';
+                                if(column_content != nullptr){
+                                        std::strncpy(this->column_content, column_content, max_column_content_length);
+                                        this->column_content[max_column_content_length] = '\0';
+                                }else{
+                                        this->column_content[0] = '\0';
+                                }
                         }
 
                         char column_content[max_column_content_length+1];
@@ -683,9 +699,9 @@ namespace io{
 
         public:
                 static void trim(char*&str_begin, char*&str_end){
-                        while(is_trim_char(*str_begin, trim_char_list...) && str_begin != str_end)
+                        while(str_begin != str_end && is_trim_char(*str_begin, trim_char_list...))
                                 ++str_begin;
-                        while(is_trim_char(*(str_end-1), trim_char_list...) && str_begin != str_end)
+                        while(str_begin != str_end && is_trim_char(*(str_end-1), trim_char_list...))
                                 --str_end;
                         *str_end = '\0';
                 }
