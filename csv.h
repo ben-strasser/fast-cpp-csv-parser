@@ -442,7 +442,7 @@ namespace io{
                 }
 
                 char*next_line(){
-                        if(data_begin == data_end)
+                        if(data_begin >= data_end)
                                 return 0;
 
                         ++file_line;
