@@ -153,7 +153,7 @@ namespace io{
                         }
 
                         int read(char*buffer, int size){
-                                return std::fread(buffer, 1, size, file);
+                                return static_cast<int>(std::fread(buffer, 1, static_cast<size_t>(size), file));
                         }
 
                         ~OwningStdIOByteSourceBase(){
@@ -187,7 +187,7 @@ namespace io{
                                 int to_copy_byte_count = desired_byte_count;
                                 if(remaining_byte_count < to_copy_byte_count)
                                         to_copy_byte_count = remaining_byte_count;
-                                std::memcpy(buffer, str, to_copy_byte_count);
+                                std::memcpy(buffer, str, static_cast<size_t>(to_copy_byte_count));
                                 remaining_byte_count -= to_copy_byte_count;
                                 str += to_copy_byte_count;
                                 return to_copy_byte_count;
@@ -463,29 +463,29 @@ namespace io{
                         }
 
                         int line_end = data_begin;
-                        while(buffer[line_end] != '\n' && line_end != data_end){
+                        while(buffer[static_cast<size_t>(line_end)] != '\n' && line_end != data_end){
                                 ++line_end;
                         }
 
                         if(line_end - data_begin + 1 > block_len){
                                 error::line_length_limit_exceeded err;
                                 err.set_file_name(file_name);
-                                err.set_file_line(file_line);
+                                err.set_file_line(static_cast<int>(file_line));
                                 throw err;
                         }
 
-                        if(buffer[line_end] == '\n' && line_end != data_end){
-                                buffer[line_end] = '\0';
+                        if(buffer[static_cast<size_t>(line_end)] == '\n' && line_end != data_end){
+                                buffer[static_cast<size_t>(line_end)] = '\0';
                         }else{
                                 // some files are missing the newline at the end of the
                                 // last line
                                 ++data_end;
-                                buffer[line_end] = '\0';
+                                buffer[static_cast<size_t>(line_end)] = '\0';
                         }
 
                         // handle windows \r\n-line breaks
-                        if(line_end != data_begin && buffer[line_end-1] == '\r')
-                                buffer[line_end-1] = '\0';
+                        if(line_end != data_begin && buffer[static_cast<size_t>(line_end-1)] == '\r')
+                                buffer[static_cast<size_t>(line_end-1)] = '\0';
 
                         char*ret = buffer.get() + data_begin;
                         data_begin = line_end+1;
