@@ -72,7 +72,7 @@ public:
 
   // File Location
   void set_file_line(unsigned);
-  unsigned get_file_line(unsigned)const;
+  unsigned get_file_line()const;
   void set_file_name(some_string_type file_name);
   const char*get_truncated_file_name()const;
 };
