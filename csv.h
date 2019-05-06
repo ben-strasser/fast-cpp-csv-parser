@@ -1209,10 +1209,12 @@ namespace io{
                 }
 
         private:
-                void parse_helper(std::size_t){}
+                bool parse_helper(std::size_t){
+                        return true;
+                }
 
                 template<class T, class ...ColType>
-                void parse_helper(std::size_t r, T&t, ColType&...cols){                        
+                bool parse_helper(std::size_t r, T&t, ColType&...cols){
                         if(row[r]){
                                 try{
                                         try{
@@ -1225,8 +1227,10 @@ namespace io{
                                         err.set_column_name(column_names[r].c_str());
                                         throw;
                                 }
+                        }else{
+                                return false;
                         }
-                        parse_helper(r+1, cols...);
+                        return parse_helper(r+1, cols...);
                 }
 
        
@@ -1250,7 +1254,7 @@ namespace io{
                                         detail::parse_line<trim_policy, quote_policy>
                                                 (line, row, col_order);
                
-                                        parse_helper(0, cols...);
+                                        return parse_helper(0, cols...);
                                 }catch(error::with_file_name&err){
                                         err.set_file_name(in.get_truncated_file_name());
                                         throw;
@@ -1260,7 +1264,7 @@ namespace io{
                                 throw;
                         }
 
-                        return true;
+                        return false;
                 }
         };
 }
