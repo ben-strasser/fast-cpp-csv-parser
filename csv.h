@@ -1058,10 +1058,10 @@ namespace io{
                                 if(e != 0){
                                         T base;
                                         if(e < 0){
-                                                base = 0.1;
+                                                base = T(0.1);
                                                 e = -e;
                                         }else{
-                                                base = 10;
+                                                base = T(10);
                                         }
        
                                         while(e != 1){
