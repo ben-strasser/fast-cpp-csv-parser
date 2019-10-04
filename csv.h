@@ -317,7 +317,7 @@ namespace io{
 
         class LineReader{
         private:
-                static const int block_len = 1<<24;
+                static const int block_len = 1<<20;
                 std::unique_ptr<char[]>buffer; // must be constructed before (and thus destructed after) the reader!
                 #ifdef CSV_IO_NO_THREAD
                 detail::SynchronousReader reader;
