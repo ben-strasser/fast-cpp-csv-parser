@@ -58,7 +58,7 @@ namespace io{
                 struct base : std::exception{
                         virtual void format_error_message()const = 0;                          
                        
-                        const char*what()const throw(){
+                        const char*what()const noexcept override{
                                 format_error_message();
                                 return error_message_buffer;
                         }
@@ -113,7 +113,7 @@ namespace io{
                         base,
                         with_file_name,
                         with_errno{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 if(errno_value != 0)
                                         std::snprintf(error_message_buffer, sizeof(error_message_buffer),
                                                 "Can not open file \"%s\" because \"%s\"."
@@ -129,7 +129,7 @@ namespace io{
                         base,
                         with_file_name,
                         with_file_line{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
                                         "Line number %d in file \"%s\" exceeds the maximum length of 2^24-1."
                                         , file_line, file_name);
@@ -443,7 +443,7 @@ namespace io{
 
                 char*next_line(){
                         if(data_begin == data_end)
-                                return 0;
+                                return nullptr;
 
                         ++file_line;
 
@@ -542,9 +542,9 @@ namespace io{
                         base,
                         with_file_name,
                         with_column_name{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
-                                        "Extra column \"%s\" in header of file \"%s\"."
+                                        R"(Extra column "%s" in header of file "%s".)"
                                         , column_name, file_name);
                         }
                 };
@@ -553,9 +553,9 @@ namespace io{
                         base,
                         with_file_name,
                         with_column_name{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
-                                        "Missing column \"%s\" in header of file \"%s\"."
+                                        R"(Missing column "%s" in header of file "%s".)"
                                         , column_name, file_name);
                         }
                 };
@@ -564,9 +564,9 @@ namespace io{
                         base,
                         with_file_name,
                         with_column_name{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
-                                        "Duplicated column \"%s\" in header of file \"%s\"."
+                                        R"(Duplicated column "%s" in header of file "%s".)"
                                         , column_name, file_name);
                         }
                 };
@@ -574,7 +574,7 @@ namespace io{
                 struct header_missing :
                         base,
                         with_file_name{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
                                         "Header missing in file \"%s\"."
                                         , file_name);
@@ -585,7 +585,7 @@ namespace io{
                         base,
                         with_file_name,
                         with_file_line{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
                                         "Too few columns in line %d in file \"%s\"."
                                         , file_line, file_name);
@@ -596,7 +596,7 @@ namespace io{
                         base,
                         with_file_name,
                         with_file_line{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
                                         "Too many columns in line %d in file \"%s\"."
                                         , file_line, file_name);
@@ -607,7 +607,7 @@ namespace io{
                         base,
                         with_file_name,
                         with_file_line{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
                                         "Escaped string was not closed in line %d in file \"%s\"."
                                         , file_line, file_name);
@@ -620,9 +620,9 @@ namespace io{
                         with_file_line,
                         with_column_name,
                         with_column_content{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
-                                        "The integer \"%s\" must be positive or 0 in column \"%s\" in file \"%s\" in line \"%d\"."
+                                        R"(The integer "%s" must be positive or 0 in column "%s" in file "%s" in line "%d".)"
                                         , column_content, column_name, file_name, file_line);
                         }
                 };
@@ -633,9 +633,9 @@ namespace io{
                         with_file_line,
                         with_column_name,
                         with_column_content{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
-                                        "The integer \"%s\" contains an invalid digit in column \"%s\" in file \"%s\" in line \"%d\"."
+                                        R"(The integer "%s" contains an invalid digit in column "%s" in file "%s" in line "%d".)"
                                         , column_content, column_name, file_name, file_line);
                         }
                 };
@@ -646,9 +646,9 @@ namespace io{
                         with_file_line,
                         with_column_name,
                         with_column_content{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
-                                        "The integer \"%s\" overflows in column \"%s\" in file \"%s\" in line \"%d\"."
+                                        R"(The integer "%s" overflows in column "%s" in file "%s" in line "%d".)"
                                         , column_content, column_name, file_name, file_line);
                         }
                 };
@@ -659,9 +659,9 @@ namespace io{
                         with_file_line,
                         with_column_name,
                         with_column_content{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
-                                        "The integer \"%s\" underflows in column \"%s\" in file \"%s\" in line \"%d\"."
+                                        R"(The integer "%s" underflows in column "%s" in file "%s" in line "%d".)"
                                         , column_content, column_name, file_name, file_line);
                         }
                 };
@@ -672,15 +672,15 @@ namespace io{
                         with_file_line,
                         with_column_name,
                         with_column_content{
-                        void format_error_message()const{
+                        void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
-                                        "The content \"%s\" of column \"%s\" in file \"%s\" in line \"%d\" is not a single character."
+                                        R"(The content "%s" of column "%s" in file "%s" in line "%d" is not a single character.)"
                                         , column_content, column_name, file_name, file_line);
                         }
                 };
         }
 
-        typedef unsigned ignore_column;
+        using ignore_column = unsigned int;
         static const ignore_column ignore_no_column = 0;
         static const ignore_column ignore_extra_column = 1;
         static const ignore_column ignore_missing_column = 2;
@@ -865,17 +865,17 @@ namespace io{
                         char**sorted_col,
                         const std::vector<int>&col_order
                 ){
-                        for(std::size_t i=0; i<col_order.size(); ++i){
+                        for (int i : col_order) {
                                 if(line == nullptr)
                                         throw ::io::error::too_few_columns();
                                 char*col_begin, *col_end;
                                 chop_next_column<quote_policy>(line, col_begin, col_end);
 
-                                if(col_order[i] != -1){
+                                if (i != -1) {
                                         trim_policy::trim(col_begin, col_end);
                                         quote_policy::unescape(col_begin, col_end);
                                                                
-                                        sorted_col[col_order[i]] = col_begin;
+                                        sorted_col[i] = col_begin;
                                 }
                         }
                         if(line != nullptr)
