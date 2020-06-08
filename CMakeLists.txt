@@ -31,14 +31,21 @@ add_library(${FAST_CPP_CSV_PARSER_LIB} ${FAST_CPP_CSV_PARSER_SRC})
 set_target_properties(${FAST_CPP_CSV_PARSER_LIB} PROPERTIES
     LINKER_LANGUAGE CXX
 )
+
 #------------------- LIBRARY DEPENDENCY LINKING -------------------------------
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
+option(USE_THREADS "Enable the use of threads within fast-cpp-parser" ON)
 
-target_link_libraries(${FAST_CPP_CSV_PARSER_LIB}
-    Threads::Threads
-)
+if (USE_THREADS)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+
+    target_link_libraries(${FAST_CPP_CSV_PARSER_LIB}
+        Threads::Threads
+    )
+else()
+    add_definitions(-DCSV_IO_NO_THREAD)
+endif()
 
 #------------------- INCLUDE DIRECTORIES TO SEARCH PATH -----------------------
 
