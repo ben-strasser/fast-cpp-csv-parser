@@ -169,6 +169,8 @@ The quote policy indicates how string should be escaped. It also specifies the c
 
 **Important**: Quoting can be quite expensive. Disable it if you do not need it.
 
+**Important**: Quoted strings may not contain unescaped newlines. This is currently not supported.
+
 The overflow policy indicates what should be done if the integers in the input are too large to fit into the variables. There following policies are predefined:
 
   * `throw_on_overflow` : Throw an `error::integer_overflow` or `error::integer_underflow` exception.
