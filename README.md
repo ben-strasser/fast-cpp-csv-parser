@@ -185,7 +185,7 @@ The comment policy allows to skip lines based on some criteria. Valid predefined
 Examples:
 
   * `CSVReader<4, trim_chars<' '>, double_quote_escape<',','\"'> >` reads 4 columns from a normal CSV file with string escaping enabled.
-  * `CSVReader<3, trim_chars<' '>, no_quote_escape<'\t'>, single_line_comment<'#'> >` reads 3 columns from a tab separated file with string escaping disabled. Lines starting with a # are ignored.
+  * `CSVReader<3, trim_chars<' '>, no_quote_escape<'\t'>, throw_on_overflow, single_line_comment<'#'> >` reads 3 columns from a tab separated file with string escaping disabled. Lines starting with a # are ignored.
 
 The constructors and the file location functions are exactly the same as for `LineReader`. See its documentation for details.
 
