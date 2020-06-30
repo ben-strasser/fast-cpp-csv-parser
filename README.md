@@ -197,7 +197,7 @@ There are three methods that deal with headers. The `read_header` methods reads 
   * `ignore_extra_column`: If a column with a name is in the file but not in the argument list, then it is silently ignored.
   * `ignore_missing_column`: If a column with a name is not in the file but is in the argument list, then `read_row` will not modify the corresponding variable. 
 
-When using `ignore_column_missing` it is a good idea to initialize the variables passed to `read_row` with a default value, for example:
+When using `ignore_missing_column` it is a good idea to initialize the variables passed to `read_row` with a default value, for example:
 
 ```cpp
 // The file only contains column "a"
