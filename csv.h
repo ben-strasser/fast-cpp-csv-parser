@@ -888,10 +888,12 @@ namespace io{
                 void parse_header_line(
                         char*line,
                         std::vector<int>&col_order,
+                        std::vector<std::string>&col_names,
                         const std::string*col_name,
                         ignore_column ignore_policy
                 ){
                         col_order.clear();
+                        col_names.clear();
 
                         bool found[column_count];
                         std::fill(found, found + column_count, false);
@@ -901,6 +903,7 @@ namespace io{
 
                                 trim_policy::trim(col_begin, col_end);
                                 quote_policy::unescape(col_begin, col_end);
+                                col_names.push_back(std::string(col_begin));
 
                                 for(unsigned i=0; i<column_count; ++i)
                                         if(col_begin == col_name[i]){
@@ -1118,6 +1121,7 @@ namespace io{
                 std::string column_names[column_count];
 
                 std::vector<int>col_order;
+                std::vector<std::string>col_names;
 
                 template<class ...ColNames>
                 void set_column_names(std::string s, ColNames...cols){
@@ -1163,7 +1167,7 @@ namespace io{
 
                                 detail::parse_header_line
                                         <column_count, trim_policy, quote_policy>
-                                        (line, col_order, column_names, ignore_policy);
+                                        (line, col_order, col_names, column_names, ignore_policy);
                         }catch(error::with_file_name&err){
                                 err.set_file_name(in.get_truncated_file_name());
                                 throw;
@@ -1182,6 +1186,22 @@ namespace io{
                         for(unsigned i=0; i<column_count; ++i)
                                 col_order[i] = i;
                 }
+
+                void set_header_from_self(){
+                    size_t size = col_names.size();
+                    size_t i = 0;
+                    for (; i < size; i++) {
+                        column_names[i] = col_names[i];
+                        col_order[i] = i;
+                    }
+
+                    for (; i < column_count; i++) {
+                        //column_names[i] = col_names[i];
+                        col_order[i] = -1;
+                    }
+                }
+
+                const std::vector<std::string> &get_col_names() const { return col_names; }
 
                 bool has_column(const std::string&name) const {
                         return col_order.end() != std::find(
