@@ -214,7 +214,7 @@ If only some columns are optional or their default value depends on other column
 
 ```cpp
 // The file only contains the columns "a" and "b"
-CSVReader<2>in(...);
+CSVReader<3>in(...);
 in.read_header(ignore_missing_column, "a", "b", "sum");
 if(!in.has_column("a") || !in.has_column("b"))
   throw my_neat_error_class();
