@@ -1190,14 +1190,15 @@ namespace io{
                 }
 
                 void set_header_from_self(){
-                    size_t size = col_names.size();
+                    const size_t size = col_names.size();
                     size_t i = 0;
                     for (; i < size; i++) {
                         column_names[i] = col_names[i];
                         col_order[i] = i;
                     }
 
-                    for (; i < column_count; i++) {
+                    size_t order_size = col_order.size();
+                    for (; i < order_size; i++) {
                         //column_names[i] = col_names[i];
                         col_order[i] = -1;
                     }
