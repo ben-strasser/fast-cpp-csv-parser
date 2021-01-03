@@ -33,7 +33,7 @@ int main(){
 
 The library only needs a standard conformant C++11 compiler. It has no further dependencies. The library is completely contained inside a single header file and therefore it is sufficient to copy this file to some place on your include path. The library does not have to be explicitly build. 
 
-Note however, that threads are used and some compiler (for example GCC) require you to link against additional librarie to make it work. With GCC it is important to add -lpthread as the last item when linking, i.e. the order in 
+Note however, that threads are used and some compiler (for example GCC) require you to link against additional libraries to make it work. With GCC it is important to add -lpthread as the last item when linking, i.e. the order in 
 
 ```
 g++ -std=c++0x a.o b.o -o prog -lpthread
