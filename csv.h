@@ -49,10 +49,33 @@
 #include <cerrno>
 #include <istream>
 
+
+
 namespace io{
         ////////////////////////////////////////////////////////////////////////////
         //                                 LineReader                             //
         ////////////////////////////////////////////////////////////////////////////
+
+        template<char sep, bool null_terminated = true>
+        struct no_quote_escape {
+            static bool hasQuote() {
+                return false;
+            }
+            static char getQuoteChar() {
+                return '\0';
+            }
+            static const char*find_next_column_end(const char*col_begin) {
+                while (*col_begin != sep && (*col_begin != '\0'))
+                    ++col_begin;
+                return col_begin;
+            }
+
+            static void unescape(char*&, char*&) {
+
+            }
+
+        };
+
 
         namespace error{
                 struct base : std::exception{
@@ -155,7 +178,7 @@ namespace io{
                         }
 
                         int read(char*buffer, int size){
-                                return std::fread(buffer, 1, size, file);
+                                return (int)std::fread(buffer, 1, size, file);
                         }
 
                         ~OwningStdIOByteSourceBase(){
@@ -172,7 +195,7 @@ namespace io{
 
                         int read(char*buffer, int size){
                                 in.read(buffer, size);
-                                return in.gcount();
+                                return (int)in.gcount();
                         }
 
                         ~NonOwningIStreamByteSource(){}
@@ -188,7 +211,7 @@ namespace io{
                         int read(char*buffer, int desired_byte_count){
                                 int to_copy_byte_count = desired_byte_count;
                                 if(remaining_byte_count < to_copy_byte_count)
-                                        to_copy_byte_count = remaining_byte_count;
+                                        to_copy_byte_count = (int)remaining_byte_count;
                                 std::memcpy(buffer, str, to_copy_byte_count);
                                 remaining_byte_count -= to_copy_byte_count;
                                 str += to_copy_byte_count;
@@ -316,7 +339,7 @@ namespace io{
                         int desired_byte_count;
                 };
         }
-
+		template<class quote_policy = no_quote_escape<','>>
         class LineReader{
         private:
                 static const int block_len = 1<<20;
@@ -328,6 +351,9 @@ namespace io{
                 #endif
                 int data_begin;
                 int data_end;
+
+				bool hasQuote;
+				char quoteChar;
 
                 char file_name[error::max_file_name_length+1];
                 unsigned file_line;
@@ -348,6 +374,9 @@ namespace io{
 
                 void init(std::unique_ptr<ByteSourceBase>byte_source){
                         file_line = 0;
+
+						hasQuote = quote_policy::hasQuote();
+						quoteChar = quote_policy::getQuoteChar();
 
                         buffer = std::unique_ptr<char[]>(new char[3*block_len]);
                         data_begin = 0;
@@ -464,9 +493,14 @@ namespace io{
                                 }
                         }
 
+						bool quoted_data = false;
                         int line_end = data_begin;
-                        while(buffer[line_end] != '\n' && line_end != data_end){
+                        while( (quoted_data || buffer[line_end] != '\n') && line_end != data_end){
+							if (hasQuote && buffer[line_end] == quoteChar) {
+								quoted_data = !quoted_data;
+							}
                                 ++line_end;
+
                         }
 
                         if(line_end - data_begin + 1 > block_len){
@@ -755,30 +789,26 @@ namespace io{
                 }
         };
 
-        template<char sep>
-        struct no_quote_escape{
-                static const char*find_next_column_end(const char*col_begin){
-                        while(*col_begin != sep && *col_begin != '\0')
-                                ++col_begin;
-                        return col_begin;
-                }
+        
 
-                static void unescape(char*&, char*&){
-
-                }
-        };
-
-        template<char sep, char quote>
+        template<char sep, char quote, bool null_terminated = true>
         struct double_quote_escape{
+				static bool hasQuote() {
+					return true;
+				}
+				static char getQuoteChar() {
+					return quote;
+				}
+
                 static const char*find_next_column_end(const char*col_begin){
-                        while(*col_begin != sep && *col_begin != '\0')
+                        while(*col_begin != sep && ( *col_begin != '\0'))
                                 if(*col_begin != quote)
                                         ++col_begin;
                                 else{
                                         do{
                                                 ++col_begin;
                                                 while(*col_begin != quote){
-                                                        if(*col_begin == '\0')
+                                                        if(( null_terminated && *col_begin == '\0'))
                                                                 throw error::escaped_string_not_closed();
                                                         ++col_begin;
                                                 }
@@ -1114,7 +1144,7 @@ namespace io{
         >
         class CSVReader{
         private:
-                LineReader in;
+                LineReader<quote_policy> in;
 
                 char*row[column_count];
                 std::string column_names[column_count];
