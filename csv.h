@@ -443,6 +443,59 @@ namespace io{
                         return file_line;
                 }
 
+
+                template<int depth>
+                struct Bit_patterns;
+
+                // specializations for certain types
+                template<> struct Bit_patterns<sizeof(uint32_t)> {
+                        static constexpr uintptr_t newline_value = 0x0a0a0a0a;
+                        static constexpr uintptr_t add_mask = 0x7efefeff;
+                        static constexpr uintptr_t and_mask = 0x81010100;
+                };
+
+                template<> struct Bit_patterns<sizeof(uint64_t)> {
+                        static constexpr uintptr_t newline_value = 0x0a0a0a0a0a0a0a0a;
+                        static constexpr uintptr_t add_mask = 0x7efefefefefefeff;
+                        static constexpr uintptr_t and_mask = 0x8101010101010100;
+                };
+
+                constexpr int get_chars_in_line(const char* buffer, const char* buffer_end) const
+                {
+                        const auto buffer_start = buffer;
+
+                        if((buffer + sizeof(uintptr_t)) < buffer_end)
+                        {
+                                uintptr_t data = 0;
+                                while ((data == 0) && (buffer + sizeof(uintptr_t)) < buffer_end)
+                                {
+                                        memcpy(&data, buffer, sizeof(data));
+
+                                        // this is an adaption of the following bithack
+                                        // -> http://graphics.stanford.edu/~seander/bithacks.html#ZeroInWord
+                                        // normalize the bits read, so that the newline character is
+                                        // transformed to zero and all other values to non-zero
+                                        data ^= Bit_patterns<sizeof(data)>::newline_value;
+
+                                        auto helper = data;
+                                        data += Bit_patterns<sizeof(data)>::add_mask;
+                                        data ^= ~helper;
+                                        data &= Bit_patterns<sizeof(data)>::and_mask;
+
+                                        buffer += sizeof(uintptr_t);
+                                }
+
+                                buffer -= sizeof(uintptr_t);
+                        }
+
+                        while (buffer != buffer_end && *buffer != '\n')
+                        {
+                                ++buffer;
+                        }
+
+                        return buffer - buffer_start;
+                }
+
                 char*next_line(){
                         if(data_begin == data_end)
                                 return nullptr;
@@ -464,10 +517,7 @@ namespace io{
                                 }
                         }
 
-                        int line_end = data_begin;
-                        while(buffer[line_end] != '\n' && line_end != data_end){
-                                ++line_end;
-                        }
+                        int line_end = data_begin + get_chars_in_line(&buffer[data_begin], &buffer[data_end]);
 
                         if(line_end - data_begin + 1 > block_len){
                                 error::line_length_limit_exceeded err;
