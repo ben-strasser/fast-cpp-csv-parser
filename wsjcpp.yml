@@ -1,0 +1,24 @@
+wsjcpp_version: "v0.1.2"
+cmake_minimum_required: "3.0"
+cmake_cxx_standard: "11"
+name: "fast-cpp-csv-parser"
+version: "v1.0.0"
+description: "Fast C++ CSV Parser"
+issues: "https://github.com/ben-strasser/fast-cpp-csv-parser/issues"
+keywords:
+  - "c++"
+  - "csv"
+  - "csv-parser"
+ 
+repositories:
+  - type: main
+    url: "https://github.com/ben-strasser/fast-cpp-csv-parser"
+
+authors:
+  - name: "Ben Strasser"
+    email: "code@ben-strasser.net"
+
+distribution:
+  - source-file: "csv.h"
+    target-file: "csv.h"
+    type: "source-code"
