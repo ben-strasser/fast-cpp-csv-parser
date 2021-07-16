@@ -465,7 +465,7 @@ namespace io{
                         }
 
                         int line_end = data_begin;
-                        while(buffer[line_end] != '\n' && line_end != data_end){
+                        while(line_end != data_end && buffer[line_end] != '\n'){
                                 ++line_end;
                         }
 
@@ -476,7 +476,7 @@ namespace io{
                                 throw err;
                         }
 
-                        if(buffer[line_end] == '\n' && line_end != data_end){
+                        if(line_end != data_end && buffer[line_end] == '\n'){
                                 buffer[line_end] = '\0';
                         }else{
                                 // some files are missing the newline at the end of the
