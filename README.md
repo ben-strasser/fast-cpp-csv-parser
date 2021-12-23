@@ -298,6 +298,25 @@ header line is incompatible between the csv data file and program source file,
 you can call `CSVReader::set_header()` manually and skip the first header
 line.
 
+## Unit Test
+
+In `tast/` contains some unit test, with a simple lightweight header only unit
+test library called `tinytast.hpp`, which is already copied there.
+
+```bash
+cd tast/
+make
+./tastme.exe # run all test
+
+./tastme.exe --help
+./tastme.exe --list
+./tastme.exe [test name ...] # run specified test
+```
+
+Mainly tested in linux though the executable target is named with `*.exe`
+suffix. The test code can also be considered as example if ignore the test
+macros.
+
 ## FAQ
 
 Q: The library is throwing a std::system_error with code -1. How to get it to work?
