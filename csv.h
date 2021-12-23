@@ -50,6 +50,10 @@
 #include <istream>
 #include <limits>
 
+#ifdef __linux__
+#include <iconv.h>
+#endif
+
 namespace io{
         ////////////////////////////////////////////////////////////////////////////
         //                                 LineReader                             //
@@ -134,7 +138,7 @@ namespace io{
                         with_file_line{
                         void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
-                                        "Line number %d in file \"%s\" exceeds the maximum length of 2^24-1."
+                                        "Line number %d in file \"%s\" exceeds the maximum length of 2^20-1."
                                         , file_line, file_name);
                         }
                 };
@@ -318,6 +322,86 @@ namespace io{
                 };
         }
 
+#ifdef __linux__
+        class TextEnconv{
+        private:
+                static const size_t ENCONV_BUFFER_SIZE = 1<<10; // 1024
+                std::vector<char>buffer;
+                iconv_t iconv_cd;
+                bool iconv_ignore_error;
+        public:
+                TextEnconv(const char* tocode, const char* fromcode, bool ignore_error = false, size_t buffer_size = ENCONV_BUFFER_SIZE)
+                        : iconv_ignore_error(ignore_error) {
+                        iconv_cd = ::iconv_open(tocode, fromcode);
+                        if (iconv_cd == (iconv_t)-1) {
+                                if (errno == EINVAL)
+                                        throw std::runtime_error(std::string("iconv not supported from ") + fromcode + " to " + tocode);
+                                else
+                                        throw std::runtime_error("fail to open iconv descriptor");
+                        }
+                        buffer.reserve(buffer_size);
+                }
+
+                ~TextEnconv() {
+                        ::iconv_close(iconv_cd);
+                }
+
+                void convert(const char* input, size_t inlen, std::string& output) {
+                        ::iconv(iconv_cd, nullptr, nullptr, nullptr, nullptr);
+                        char* src_ptr = const_cast<char*>(input);
+                        size_t src_size = inlen;
+                        while (0 < src_size) {
+                                char* dst_ptr = &buffer[0];
+                                size_t dst_size = buffer.capacity();
+                                size_t res = ::iconv(iconv_cd, &src_ptr, &src_size, &dst_ptr, &dst_size);
+                                if (res == (size_t)-1) {
+                                        if (errno == E2BIG)  {
+                                                // ignore this error
+                                        } else if (iconv_ignore_error) {
+                                                // skip character
+                                                ++src_ptr;
+                                                --src_size;
+                                        } else {
+                                                throw std::runtime_error("fail convert text encoding");
+                                        }
+                                }
+                                output.append(&buffer[0], buffer.capacity() - dst_size);
+                        }
+                }
+
+                void convert(const std::string& input, std::string& output) {
+                        return convert(input.c_str(), input.size(), output);
+                }
+
+                bool try_convert(std::string& input) {
+                        std::string output;
+                        try {
+                                convert(input, output);
+                        } catch (std::runtime_error& err) {
+                                return false;
+                        }
+                        input.swap(output);
+                        return true;
+                }
+        };
+
+        class TieString {
+        private:
+                TextEnconv& enconv_ref;
+                std::string& target_ref;
+
+        public:
+                TieString(TextEnconv& enconv, std::string& target) : enconv_ref(enconv), target_ref(target) {}
+                void set_str(const std::string& input) {
+                        target_ref.clear();
+                        enconv_ref.convert(input, target_ref);
+                }
+                std::string& get_str() { return target_ref; }
+                const char* c_str() const { return target_ref.c_str(); }
+                const std::string& str() const { return target_ref; }
+        };
+#endif
+
         class LineReader{
         private:
                 static const int block_len = 1<<20;
@@ -397,6 +481,11 @@ namespace io{
                 LineReader(const std::string&file_name, const char*data_begin, const char*data_end){
                         set_file_name(file_name.c_str());
                         init(std::unique_ptr<ByteSourceBase>(new detail::NonOwningStringByteSource(data_begin, data_end-data_begin)));
+                }
+
+                LineReader(const std::string&file_name, const std::string& data){
+                    set_file_name(file_name);
+                    init(std::unique_ptr<ByteSourceBase>(new detail::NonOwningStringByteSource(data.c_str(), data.size())));
                 }
 
                 LineReader(const char*file_name, FILE*file){
@@ -678,6 +767,19 @@ namespace io{
                         void format_error_message()const override{
                                 std::snprintf(error_message_buffer, sizeof(error_message_buffer),
                                         R"(The content "%s" of column "%s" in file "%s" in line "%d" is not a single character.)"
+                                        , column_content, column_name, file_name, file_line);
+                        }
+                };
+
+                struct fail_convert_encode :
+                        base,
+                        with_file_name,
+                        with_file_line,
+                        with_column_name,
+                        with_column_content{
+                        void format_error_message()const override{
+                                std::snprintf(error_message_buffer, sizeof(error_message_buffer),
+                                        R"(fail convert encode for "%s" in column "%s" in file "%s" in line "%d".)"
                                         , column_content, column_name, file_name, file_line);
                         }
                 };
@@ -1105,6 +1207,19 @@ namespace io{
                                 "Can not parse this type. Only buildin integrals, floats, char, char*, const char* and std::string are supported");
                 }
 
+#ifdef __linux__
+                template<class overflow_policy>
+                void parse(char* col, ::io::TieString& x) {
+                        std::string input;
+                        parse<overflow_policy>(col, input);
+                        try {
+                                x.set_str(input);
+                        } catch (std::runtime_error& err) {
+                                throw error::fail_convert_encode();
+                        }
+                }
+#endif
+
         }
 
         template<unsigned column_count,
@@ -1146,9 +1261,9 @@ namespace io{
                                 column_names[i-1] = "col"+std::to_string(i);
                 }
 
-		char*next_line(){
-			return in.next_line();
-		}
+                char*next_line(){
+                    return in.next_line();
+                }
 
                 template<class ...ColNames>
                 void read_header(ignore_column ignore_policy, ColNames...cols){
@@ -1217,7 +1332,7 @@ namespace io{
                 void parse_helper(std::size_t){}
 
                 template<class T, class ...ColType>
-                void parse_helper(std::size_t r, T&t, ColType&...cols){
+                void parse_helper(std::size_t r, T&&t, ColType&&...cols){
                         if(row[r]){
                                 try{
                                         try{
@@ -1231,13 +1346,13 @@ namespace io{
                                         throw;
                                 }
                         }
-                        parse_helper(r+1, cols...);
+                        parse_helper(r+1, std::forward<ColType>(cols)...);
                 }
 
 
         public:
                 template<class ...ColType>
-                bool read_row(ColType& ...cols){
+                bool read_row(ColType&& ...cols){
                         static_assert(sizeof...(ColType)>=column_count,
                                 "not enough columns specified");
                         static_assert(sizeof...(ColType)<=column_count,
@@ -1255,7 +1370,7 @@ namespace io{
                                         detail::parse_line<trim_policy, quote_policy>
                                                 (line, row, col_order);
 
-                                        parse_helper(0, cols...);
+                                        parse_helper(0, std::forward<ColType>(cols)...);
                                 }catch(error::with_file_name&err){
                                         err.set_file_name(in.get_truncated_file_name());
                                         throw;

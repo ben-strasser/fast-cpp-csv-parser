@@ -243,6 +243,61 @@ The `read_row` function reads a line, splits it into the columns and arranges th
 
 Note that there is no inherent overhead to using `char*` and then interpreting it compared to using one of the parsers directly build into `CSVReader`. The builtin number parsers are pure convenience. If you need a slightly different syntax then use `char*` and do the parsing yourself.
 
+### Encode Convertion
+
+A separate class `TextEnconv` is provided to convert between different
+encoding, using the iconv library that is only avialable in linux now.
+The `LineReader` and `CSVReader` is not dependent on `TextEnconv`, while can
+make use of it just when needed.
+
+It is required source encode and target encode to create `TextEnconv` object,
+and then call `converte()` or `try_convert()` method to convert some input
+string.
+
+For exapmle, you can convert each line got from `LineReader` as following,
+assuming the input is encoded in GBK while need UTF-8 for later process: 
+
+```cpp
+TextEnconv gbk2utf("UTF-8", "GBK");
+LineReader in(...);
+while (char *line = in.next_line()) {
+  std::string input = line;
+  gbk2utf.try_convert(input);
+  // process input as UTF-8 ...
+}
+```
+
+When worked with `CSVReader`, it is even possible to decode individual column
+from different encoding, by another helper class `TieString` which means
+binding a reading string with an `TextEnconv` object.
+
+```cpp
+TextEnconv gbk2utf("UTF-8", "GBK");
+TextEnconv ejp2utf("UTF-8", "EUC-JP");
+CSVReader<7> in(...);
+in.read_header(io::ignore_missing_column, "id", 
+  "first_name", "last_name",       // two column in english
+  "first_name.zh", "last_name.zh", // two column in chinese
+  "first_name.jp", "last_name.jp"  // two column in japanese
+  );
+int id;
+std::string first_name, last_name;
+std::string first_name_zh, last_name_zh;
+std::string first_name_jp, last_name_jp;
+while (in.read_row(id, first_name, last_name,
+  TieString(gbk2utf, first_name_zh), TieString(gbk2utf, last_name_zh),
+  TieString(ejp2utf, first_name_jp), TieString(ejp2utf, last_name_jp)
+  ))
+{
+  // process all string columns as UTF-8
+}
+```
+
+But note the header line cannot be treated in this way. If the encode of the
+header line is incompatible between the csv data file and program source file, 
+you can call `CSVReader::set_header()` manually and skip the first header
+line.
+
 ## FAQ
 
 Q: The library is throwing a std::system_error with code -1. How to get it to work?
