@@ -64,10 +64,10 @@ namespace io{
                                 return error_message_buffer;
                         }
 
-                        mutable char error_message_buffer[512];
+                        mutable char error_message_buffer[2048];
                 };
 
-                const int max_file_name_length = 255;
+                const int max_file_name_length = 1024;
 
                 struct with_file_name{
                         with_file_name(){
@@ -425,7 +425,7 @@ namespace io{
 
                 void set_file_name(const char*file_name){
                         if(file_name != nullptr){
-                                strncpy(this->file_name, file_name, sizeof(this->file_name));
+                                strncpy(this->file_name, file_name, sizeof(this->file_name)-1);
                                 this->file_name[sizeof(this->file_name)-1] = '\0';
                         }else{
                                 this->file_name[0] = '\0';
