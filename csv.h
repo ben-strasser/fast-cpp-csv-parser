@@ -466,7 +466,7 @@ namespace io{
                         }
 
                         int line_end = data_begin;
-                        while(line_end != data_end && buffer[line_end] != '\n'){
+                        while(line_end != data_end && buffer[line_end] != '\n' && buffer[line_end] != '\r'){
                                 ++line_end;
                         }
 
@@ -476,19 +476,23 @@ namespace io{
                                 err.set_file_line(file_line);
                                 throw err;
                         }
-
+                        // handle linux \n- and windows \r\n-line breaks
                         if(line_end != data_end && buffer[line_end] == '\n'){
                                 buffer[line_end] = '\0';
-                        }else{
+                                // handle windows \r\n-line breaks
+                                if(line_end != data_begin && buffer[line_end-1] == '\r')
+                                        buffer[line_end-1] = '\0';
+                        }
+                        // handle mac \r-line breaks
+                        else if(line_end != data_end && buffer[line_end] == '\r') {
+                                buffer[line_end] = '\0';
+                        }
+                        else{
                                 // some files are missing the newline at the end of the
                                 // last line
                                 ++data_end;
                                 buffer[line_end] = '\0';
                         }
-
-                        // handle windows \r\n-line breaks
-                        if(line_end != data_begin && buffer[line_end-1] == '\r')
-                                buffer[line_end-1] = '\0';
 
                         char*ret = buffer.get() + data_begin;
                         data_begin = line_end+1;
