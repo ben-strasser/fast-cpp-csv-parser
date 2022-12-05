@@ -33,7 +33,7 @@ int main(){
 
 The library only needs a standard conformant C++11 compiler. It has no further dependencies. The library is completely contained inside a single header file and therefore it is sufficient to copy this file to some place on your include path. The library does not have to be explicitly build. 
 
-Note however, that threads are used and some compiler (for example GCC) require you to link against additional librarie to make it work. With GCC it is important to add -lpthread as the last item when linking, i.e. the order in 
+Note however, that threads are used and some compiler (for example GCC) require you to link against additional libraries to make it work. With GCC it is important to add -lpthread as the last item when linking, i.e. the order in 
 
 ```
 g++ -std=c++0x a.o b.o -o prog -lpthread
@@ -169,6 +169,8 @@ The quote policy indicates how string should be escaped. It also specifies the c
 
 **Important**: Quoting can be quite expensive. Disable it if you do not need it.
 
+**Important**: Quoted strings may not contain unescaped newlines. This is currently not supported.
+
 The overflow policy indicates what should be done if the integers in the input are too large to fit into the variables. There following policies are predefined:
 
   * `throw_on_overflow` : Throw an `error::integer_overflow` or `error::integer_underflow` exception.
@@ -185,7 +187,7 @@ The comment policy allows to skip lines based on some criteria. Valid predefined
 Examples:
 
   * `CSVReader<4, trim_chars<' '>, double_quote_escape<',','\"'> >` reads 4 columns from a normal CSV file with string escaping enabled.
-  * `CSVReader<3, trim_chars<' '>, no_quote_escape<'\t'>, single_line_comment<'#'> >` reads 3 columns from a tab separated file with string escaping disabled. Lines starting with a # are ignored.
+  * `CSVReader<3, trim_chars<' '>, no_quote_escape<'\t'>, throw_on_overflow, single_line_comment<'#'> >` reads 3 columns from a tab separated file with string escaping disabled. Lines starting with a # are ignored.
 
 The constructors and the file location functions are exactly the same as for `LineReader`. See its documentation for details.
 
@@ -195,7 +197,7 @@ There are three methods that deal with headers. The `read_header` methods reads 
   * `ignore_extra_column`: If a column with a name is in the file but not in the argument list, then it is silently ignored.
   * `ignore_missing_column`: If a column with a name is not in the file but is in the argument list, then `read_row` will not modify the corresponding variable. 
 
-When using `ignore_column_missing` it is a good idea to initialize the variables passed to `read_row` with a default value, for example:
+When using `ignore_missing_column` it is a good idea to initialize the variables passed to `read_row` with a default value, for example:
 
 ```cpp
 // The file only contains column "a"
@@ -212,7 +214,7 @@ If only some columns are optional or their default value depends on other column
 
 ```cpp
 // The file only contains the columns "a" and "b"
-CSVReader<2>in(...);
+CSVReader<3>in(...);
 in.read_header(ignore_missing_column, "a", "b", "sum");
 if(!in.has_column("a") || !in.has_column("b"))
   throw my_neat_error_class();
@@ -266,3 +268,8 @@ A: When using GCC have you linked against -lpthread? Read the installation secti
 Q: Does the library support UTF?
 
 A: The library has basic UTF-8 support, or to be more precise it does not break when passing UTF-8 strings through it. If you read a `char*` then you get a pointer to the UTF-8 string. You will have to decode the string on your own. The separator, quoting, and commenting characters used by the library can only be ASCII characters.
+
+
+Q: Does the library support string fields that span multiple lines?
+
+A: No. This feature has been often requested in the past, however, it is difficult to make it work with the current design without breaking something else.
