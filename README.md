@@ -69,6 +69,7 @@ public:
   char*next_line();
 
   // File Location
+  // (These only affect the content of the error message)
   void set_file_line(unsigned);
   unsigned get_file_line()const;
   void set_file_name(some_string_type file_name);
