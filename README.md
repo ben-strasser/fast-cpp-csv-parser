@@ -272,3 +272,8 @@ A: The library has basic UTF-8 support, or to be more precise it does not break 
 Q: Does the library support string fields that span multiple lines?
 
 A: No. This feature has been often requested in the past, however, it is difficult to make it work with the current design without breaking something else.
+
+
+Q: Can this library handle a variable number of columns?
+
+A: You can read a compile-time known constant number of columns from a file with a variable number of columns. Which columns will be read depends on the strings in the header line. There is no way to read a variable number of columns. You can think of the provided functionality as a SQL `select col1,col2,col3 from my_file.csv` statement and the CSV file as table. You can change the number of columns in the table without affecting the result of the select as long as the queried columns remain.
