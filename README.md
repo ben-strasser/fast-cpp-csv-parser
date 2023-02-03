@@ -45,8 +45,6 @@ Remember that the library makes use of C++11 features and therefore you have to 
 
 The library was developed and tested with GCC 4.6.1
 
-Note that VS2013 is not C++11 compliant and will therefore not work out of the box. See [here](https://code.google.com/p/fast-cpp-csv-parser/issues/detail?id=6) for what needs to be adjusted to make the code work.
-
 ## Documentation
 
 The library provides two classes:
