@@ -64,10 +64,11 @@ struct base : std::exception {
     return error_message_buffer;
   }
 
-  mutable char error_message_buffer[512];
+  mutable char error_message_buffer[2048];
 };
 
-const int max_file_name_length = 255;
+// this only affects the file name in the error message
+const int max_file_name_length = 1024;
 
 struct with_file_name {
   with_file_name() { std::memset(file_name, 0, sizeof(file_name)); }
