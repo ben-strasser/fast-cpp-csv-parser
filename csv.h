@@ -1036,11 +1036,11 @@ template <class overflow_policy, class T> void parse(char *col, T &x) {
   // Mute unused variable compiler warning
   (void)col;
   (void)x;
-  // GCC evalutes "false" when reading the template and
+  // GCC evaluates "false" when reading the template and
   // "sizeof(T)!=sizeof(T)" only when instantiating it. This is why
   // this strange construct is used.
   static_assert(sizeof(T) != sizeof(T),
-                "Can not parse this type. Only buildin integrals, floats, "
+                "Can not parse this type. Only builtin integrals, floats, "
                 "char, char*, const char* and std::string are supported");
 }
 
