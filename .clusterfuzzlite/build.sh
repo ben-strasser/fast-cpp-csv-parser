@@ -8,9 +8,9 @@
 # LIB_FUZZING_ENGINE: linker flag for fuzzing harnesses
 
 # Copy all fuzzer executables to $OUT/
-
-# Copy all fuzzer executables to $OUT/
-$CXX $CFLAGS $LIB_FUZZING_ENGINE \
+# CXXFLAGS holds variables necessary to instrument fuzzing, e.g. saniizer and
+# fuzzing flags.
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
   $SRC/fast-cpp-csv-parser/.clusterfuzzlite/parse_fuzzer.cpp \
   -o $OUT/parse_fuzzer \
   -I$SRC/fast-cpp-csv-parser
