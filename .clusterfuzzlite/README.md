@@ -4,7 +4,7 @@ This folder contains a fuzzing set for [ClusterFuzzLite](https://google.github.i
 
 ## Running fuzzing locally
 
-To reproduce this set up the way ClusterFuzzLite does it (by way of [OSS-Fuzz](https://github.com/google/oss)) you can do:
+To reproduce this set up the way ClusterFuzzLite does it (by way of [OSS-Fuzz](https://github.com/google/oss-fuzz)) you can do:
 
 ```sh
 git clone https://github.com/google/oss-fuzz
