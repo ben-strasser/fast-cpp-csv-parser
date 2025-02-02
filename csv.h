@@ -968,8 +968,22 @@ template <class T> void parse_float(const char *col, T &x) {
     ++col;
   } else if (*col == '+')
     ++col;
+  
+  if(   (*col == 'N' && *(col + 1) == 'a' && *(col + 2) == 'N') |
+        (*col == 'i' && *(col + 1) == 'n' && *(col + 2) == 'f')) {
+      
+      if(*col == 'N' && is_neg)
+          throw error::no_digit();
+      x = (*col == 'N') ?
+          std::numeric_limits<T>::quiet_NaN() : std::numeric_limits<T>::infinity();
+      col += 3;
+      if (*col != '\0')
+          throw error::no_digit();
+  }
+  else {
+      x = 0;
+  }
 
-  x = 0;
   while ('0' <= *col && *col <= '9') {
     int y = *col - '0';
     x *= 10;
