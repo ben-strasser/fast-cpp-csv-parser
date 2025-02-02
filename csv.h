@@ -969,7 +969,16 @@ template <class T> void parse_float(const char *col, T &x) {
   } else if (*col == '+')
     ++col;
 
-  x = 0;
+  if(*col == 'i' && *(col + 1) == 'n' && *(col + 2) == 'f') {
+      x = std::numeric_limits<T>::infinity();
+      col += 3;
+      if (*col != '\0')
+          throw error::no_digit();
+  }
+  else {
+      x = 0;
+  }
+
   while ('0' <= *col && *col <= '9') {
     int y = *col - '0';
     x *= 10;
