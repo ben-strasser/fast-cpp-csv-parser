@@ -137,7 +137,7 @@ class OwningStdIOByteSourceBase : public ByteSourceBase {
 public:
   explicit OwningStdIOByteSourceBase(FILE *file) : file(file) {
     // Tell the std library that we want to do the buffering ourself.
-    std::setvbuf(file, 0, _IONBF, 0);
+    std::setvbuf(file, nullptr, _IONBF, 0);
   }
 
   int read(char *buffer, int size) { return std::fread(buffer, 1, size, file); }
@@ -306,7 +306,7 @@ private:
     // We open the file in binary mode as it makes no difference under *nix
     // and under Windows we handle \r\n newlines ourself.
     FILE *file = std::fopen(file_name, "rb");
-    if (file == 0) {
+    if (file == nullptr) {
       int x = errno; // store errno as soon as possible, doing it after
                      // constructor call can fail.
       error::can_not_open_file err;
@@ -845,7 +845,7 @@ void parse_header_line(char *line, std::vector<int> &col_order,
         }
         found[i] = true;
         col_order.push_back(i);
-        col_begin = 0;
+        col_begin = nullptr;
         break;
       }
     if (col_begin) {
